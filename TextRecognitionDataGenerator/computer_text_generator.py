@@ -13,16 +13,21 @@ def generate(text, font, text_color, font_size, orientation, space_width, fit):
 def _generate_horizontal_text(text, font, text_color, font_size, space_width, fit):
     image_font = ImageFont.truetype(font=font, size=font_size)
     words = text.split(' ')
+    
+    for i,e in enumerate(words):
+        words[i] = e + " "
+        
     space_width = image_font.getsize(' ')[0] * space_width
 
     words_width = [image_font.getsize(w)[0] for w in words]
     text_width =  sum(words_width) + int(space_width) * (len(words) - 1)
-    text_height = max([image_font.getsize(w)[1] for w in words])
+    text_height = max([image_font.getmask(w).size[1] for w in words])
+    text_height = int(text_height * 2)
+    txt_img = Image.new('RGBA', (text_width, text_height + 500), (0,0,0,0))
 
-    txt_img = Image.new('RGBA', (text_width, text_height), (0, 0, 0, 0))
-
+    # print(txt_img.size, text_height, text_width)
     txt_draw = ImageDraw.Draw(txt_img)
-
+    
     colors = [ImageColor.getrgb(c) for c in text_color.split(',')]
     c1, c2 = colors[0], colors[-1]
 
@@ -33,9 +38,14 @@ def _generate_horizontal_text(text, font, text_color, font_size, space_width, fi
     )
 
     for i, w in enumerate(words):
-        txt_draw.text((sum(words_width[0:i]) + i * int(space_width), 0), w, fill=fill, font=image_font)
-
+        txt_draw.text((sum(words_width[0:i]) + i * int(space_width), 100), w, fill=fill, font=image_font,language="th")
+        # print((sum(words_width[0:i]) + i * int(space_width), 1))
+    # txt_img.show()
     if fit:
+        # print("txt_img.getbbox()",txt_img.getbbox())
+        # newMargin =  txt_img.getbbox()
+        # newMargin = ((newMargin[0]/100)*90,newMargin[1],(newMargin[2]/100)*90,newMargin[3])
+        # return txt_img.crop(newMargin)
         return txt_img.crop(txt_img.getbbox())
     else:
         return txt_img
@@ -48,9 +58,9 @@ def _generate_vertical_text(text, font, text_color, font_size, space_width, fit)
     char_heights = [image_font.getsize(c)[1] if c != ' ' else space_height for c in text]
     text_width = max([image_font.getsize(c)[0] for c in text])
     text_height = sum(char_heights)
-
-    txt_img = Image.new('RGBA', (text_width, text_height), (0, 0, 0, 0))
-
+    
+    txt_img = Image.new('RGBA', (text_width, text_height), (0,0,0,0))
+    
     txt_draw = ImageDraw.Draw(txt_img)
 
     colors = [ImageColor.getrgb(c) for c in text_color.split(',')]
